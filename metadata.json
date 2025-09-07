@@ -1,0 +1,5 @@
+{
+  "name": "Pose Animator AI",
+  "description": "An application that uses the Gemini 'nano banana' model to apply a drawn pose to a character image. Users can upload a character, sketch a pose, and generate a new image with the character in that pose.",
+  "requestFramePermissions": []
+}
