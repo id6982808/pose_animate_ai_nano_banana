@@ -19,7 +19,24 @@ const LoadingSpinner: React.FC = () => (
   </div>
 );
 
+const DownloadIcon: React.FC<{className?: string}> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+    </svg>
+);
+
+
 const ResultDisplay: React.FC<ResultDisplayProps> = ({ generatedImage, generatedText, isLoading, error }) => {
+  const handleDownload = () => {
+    if (!generatedImage) return;
+    const link = document.createElement('a');
+    link.href = generatedImage;
+    link.download = 'posed-character.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return <LoadingSpinner />;
@@ -34,9 +51,17 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ generatedImage, generated
     }
     if (generatedImage) {
       return (
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-4 w-full">
           <img src={generatedImage} alt="Generated result" className="max-h-full max-w-full object-contain rounded-md" />
           {generatedText && <p className="text-sm text-gray-400 mt-2 p-2 bg-gray-900 rounded-md">{generatedText}</p>}
+          <button
+            onClick={handleDownload}
+            className="mt-4 w-full px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors flex items-center justify-center gap-2"
+            aria-label="Download generated image"
+          >
+            <DownloadIcon className="w-5 h-5" />
+            Download Image
+          </button>
         </div>
       );
     }
