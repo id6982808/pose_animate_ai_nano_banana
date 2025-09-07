@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState, useImperativeHandle, forwardRef } from 'react';
 
 export interface DrawingCanvasRef {
@@ -46,11 +45,25 @@ const DrawingCanvas = forwardRef<DrawingCanvasRef>((props, ref) => {
     }
   }, [color, lineWidth, isErasing]);
 
+  const getScaledCoordinates = (event: MouseEvent): { x: number, y: number } | null => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    return {
+      x: (event.clientX - rect.left) * scaleX,
+      y: (event.clientY - rect.top) * scaleY,
+    };
+  };
+
   const startDrawing = ({ nativeEvent }: React.MouseEvent<HTMLCanvasElement>) => {
-    const { offsetX, offsetY } = nativeEvent;
-    if (contextRef.current) {
+    const point = getScaledCoordinates(nativeEvent);
+    if (contextRef.current && point) {
         contextRef.current.beginPath();
-        contextRef.current.moveTo(offsetX, offsetY);
+        contextRef.current.moveTo(point.x, point.y);
         isDrawing.current = true;
     }
   };
@@ -64,9 +77,10 @@ const DrawingCanvas = forwardRef<DrawingCanvasRef>((props, ref) => {
 
   const draw = ({ nativeEvent }: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing.current) return;
-    const { offsetX, offsetY } = nativeEvent;
-    if (contextRef.current) {
-        contextRef.current.lineTo(offsetX, offsetY);
+    
+    const point = getScaledCoordinates(nativeEvent);
+    if (contextRef.current && point) {
+        contextRef.current.lineTo(point.x, point.y);
         contextRef.current.stroke();
     }
   };
@@ -114,10 +128,10 @@ const DrawingCanvas = forwardRef<DrawingCanvasRef>((props, ref) => {
         <div className="mt-4 flex flex-col gap-3">
             <div className="flex items-center justify-between gap-4">
                <div className="flex items-center gap-2">
-                 <button onClick={() => setIsErasing(false)} className={`p-2 rounded-md ${!isErasing ? 'bg-purple-600' : 'bg-gray-700 hover:bg-gray-600'}`}><BrushIcon className="w-5 h-5"/></button>
-                 <button onClick={() => setIsErasing(true)} className={`p-2 rounded-md ${isErasing ? 'bg-purple-600' : 'bg-gray-700 hover:bg-gray-600'}`}><EraserIcon className="w-5 h-5"/></button>
+                 <button onClick={() => setIsErasing(false)} className={`p-2 rounded-md ${!isErasing ? 'bg-purple-600' : 'bg-gray-700 hover:bg-gray-600'}`} aria-label="Brush tool"><BrushIcon className="w-5 h-5"/></button>
+                 <button onClick={() => setIsErasing(true)} className={`p-2 rounded-md ${isErasing ? 'bg-purple-600' : 'bg-gray-700 hover:bg-gray-600'}`} aria-label="Eraser tool"><EraserIcon className="w-5 h-5"/></button>
                </div>
-               <input type="color" value={color} onChange={e => setColor(e.target.value)} disabled={isErasing} className="w-10 h-10 rounded-md cursor-pointer bg-gray-700 disabled:opacity-50" />
+               <input type="color" value={color} onChange={e => setColor(e.target.value)} disabled={isErasing} className="w-10 h-10 rounded-md cursor-pointer bg-gray-700 disabled:opacity-50" aria-label="Color picker"/>
                <button onClick={clearCanvas} className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition-colors">Clear</button>
             </div>
             <div className="flex items-center gap-2">
